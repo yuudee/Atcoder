@@ -1,17 +1,45 @@
-S = []
-que = []
-Q = int(input())    #クエリ数取得
+#defalutdictでそれぞれの数がSに入っている数を管理する
+#heapで最大値、最小値を高速で取り出す
 
-#各クエリの内容の入力
-que = [input().split() for i in range(Q)]
+from collections import defaultdict
+import heapq
 
-for q in que:
-    if int(q[0]) == 1:
-        S.append(int(q[1]))
-    elif int(q[0]) == 2:
-        num = min(int(q[2]),S.count(int(q[1])))
-        for j in range(num):
-            S.remove(int(q[1]))
-    elif int(q[0]) == 3:
-        tmp = max(S)-min(S)
-        print(tmp)
+#　クエリ数の受け取り
+Q = int(input())
+
+count = defaultdict(int)
+maxque = []
+minque = []
+
+for i in range(Q):
+    # 入力の受け取り
+    query = list(map(int,input().split()))
+
+    if query[0] == 1:
+        x = query[1]
+        count[x] += 1
+
+        heapq.heappush(minque,x)
+        heapq.heappush(maxque,-x)
+    elif query[0] == 2:
+        count[query[1]] -= min(query[2],count[query[1]])
+    else:
+        # 最小値取り出し
+        smin = heapq.heappop(minque)
+        # 最小値がクエリ2によってすでに全部削除されて0個になっているかもしれない
+        while count[smin] == 0:
+            smin = heapq.heappop(minque)
+
+        # 最大値取り出し
+        smax = heapq.heappop(maxque)
+        smax *= -1
+        # 最大値がクエリ2によってすでに全部削除されて0個になっているかもしれない
+        while count[smax] == 0:
+            smax = heapq.heappop(maxque)
+            smax *= -1
+        
+        print(smax - smin)
+
+        # 次のクエリのために最小値、最大値を戻す
+        heapq.heappush(minque,smin)
+        heapq.heappush(maxque,-smax)
